@@ -1,0 +1,43 @@
+
+```yaml
+services:
+  - type: web
+    name: backend
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: DATABASE_URL
+      - key: JWT_SECRET
+      - key: OPENAI_API_KEY
+      - key: STRIPE_SECRET_KEY
+      - key: NEXT_PUBLIC_API_BASE_URL
+    branch: main
+    rootDir: backend
+
+  - type: web
+    name: frontend
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    branch: main
+    rootDir: frontend
+
+  - type: worker
+    name: worker
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python worker.py
+    branch: main
+    rootDir: backend
+
+cronJobs:
+  - name: daily-cron
+    schedule: "0 0 * * *"
+    service: worker
+    command: python cron.py
+```
+
